@@ -48,7 +48,6 @@ private data class FavoriteTool(
 private val favoriteTools = listOf(
     FavoriteTool("GPA / SGPA Calculator", "Smart Education", Color(0xFF1E88E5), Icons.Outlined.Visibility),
     FavoriteTool("PDF Compressor", "PDF & Documents", Color(0xFFE53935), Icons.Outlined.Visibility),
-    FavoriteTool("QR Scanner", "Image & Camera", Color(0xFFFF9800), Icons.Outlined.Visibility),
 )
 
 @Composable

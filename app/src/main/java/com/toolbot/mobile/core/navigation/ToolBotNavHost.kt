@@ -8,17 +8,30 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.toolbot.mobile.feature.aitext.grammar.GrammarImproverScreen
+import com.toolbot.mobile.feature.aitext.keywords.KeywordExtractorScreen
+import com.toolbot.mobile.feature.aitext.summarizer.AiTextSummarizerScreen
+import com.toolbot.mobile.feature.aitext.translator.TextTranslatorScreen
 import com.toolbot.mobile.feature.favorites.FavoritesScreen
+import com.toolbot.mobile.feature.generalutilities.emicalculator.EmiCalculatorScreen
+import com.toolbot.mobile.feature.generalutilities.scientificcalculator.ScientificCalculatorScreen
+import com.toolbot.mobile.feature.generalutilities.unitconverter.UnitConverterScreen
 import com.toolbot.mobile.feature.home.ToolBotHomeRoute
 import com.toolbot.mobile.feature.pdfdocuments.compressor.PdfCompressorScreen
 import com.toolbot.mobile.feature.pdfdocuments.merger.PdfMergerScreen
 import com.toolbot.mobile.feature.pdfdocuments.splitter.PdfSplitterScreen
+import com.toolbot.mobile.feature.pdfdocuments.word.PdfToWordScreen
+import com.toolbot.mobile.feature.pdfdocuments.word.WordToPdfScreen
 import com.toolbot.mobile.feature.settings.SettingsScreen
 import com.toolbot.mobile.feature.smarteducation.attendance.SmartAttendanceScreen
 import com.toolbot.mobile.feature.smarteducation.cgpa.CgpaScreen
 import com.toolbot.mobile.feature.smarteducation.gpa.GpaSgpaScreen
 import com.toolbot.mobile.feature.smarteducation.percentage.PercentageGradeScreen
 import com.toolbot.mobile.feature.tools.ToolsScreen
+import com.toolbot.mobile.feature.imagecamera.compressor.ImageCompressorScreen
+import com.toolbot.mobile.feature.imagecamera.imagetopdf.ImageToPdfScreen
+import com.toolbot.mobile.feature.imagecamera.resizer.ImageResizerScreen
+import com.toolbot.mobile.feature.imagecamera.converter.ImageFormatConverterScreen
 
 private const val HOME_ROUTE = "home"
 private const val TOOLS_ROUTE = "tools"
@@ -31,6 +44,19 @@ private const val PERCENTAGE_GRADE_ROUTE = "percentage_grade"
 private const val PDF_MERGER_ROUTE = "pdf_merger"
 private const val PDF_SPLITTER_ROUTE = "pdf_splitter"
 private const val PDF_COMPRESSOR_ROUTE = "pdf_compressor"
+private const val PDF_TO_WORD_ROUTE = "pdf_to_word"
+private const val WORD_TO_PDF_ROUTE = "word_to_pdf"
+private const val IMAGE_COMPRESSOR_ROUTE = "image_compressor"
+private const val IMAGE_TO_PDF_ROUTE = "image_to_pdf"
+private const val IMAGE_RESIZER_ROUTE = "image_resizer"
+private const val IMAGE_CONVERTER_ROUTE = "image_converter"
+private const val SCIENTIFIC_CALCULATOR_ROUTE = "scientific_calculator"
+private const val UNIT_CONVERTER_ROUTE = "unit_converter"
+private const val EMI_CALCULATOR_ROUTE = "emi_calculator"
+private const val AI_TEXT_SUMMARIZER_ROUTE = "ai_text_summarizer"
+private const val GRAMMAR_IMPROVER_ROUTE = "grammar_improver"
+private const val TEXT_TRANSLATOR_ROUTE = "text_translator"
+private const val KEYWORD_EXTRACTOR_ROUTE = "keyword_extractor"
 
 @Composable
 fun ToolBotNavHost(modifier: Modifier = Modifier) {
@@ -65,6 +91,19 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
                         "PDF Merger" -> navController.navigate(PDF_MERGER_ROUTE)
                         "PDF Splitter" -> navController.navigate(PDF_SPLITTER_ROUTE)
                         "PDF Compressor" -> navController.navigate(PDF_COMPRESSOR_ROUTE)
+                        "PDF to Word" -> navController.navigate(PDF_TO_WORD_ROUTE)
+                        "Word to PDF" -> navController.navigate(WORD_TO_PDF_ROUTE)
+                        "Image Compressor" -> navController.navigate(IMAGE_COMPRESSOR_ROUTE)
+                        "Image to PDF" -> navController.navigate(IMAGE_TO_PDF_ROUTE)
+                        "Image Resizer" -> navController.navigate(IMAGE_RESIZER_ROUTE)
+                        "Image Format Converter" -> navController.navigate(IMAGE_CONVERTER_ROUTE)
+                        "Scientific Calculator" -> navController.navigate(SCIENTIFIC_CALCULATOR_ROUTE)
+                        "Unit Converter" -> navController.navigate(UNIT_CONVERTER_ROUTE)
+                        "EMI Calculator" -> navController.navigate(EMI_CALCULATOR_ROUTE)
+                        "AI Text Summarizer" -> navController.navigate(AI_TEXT_SUMMARIZER_ROUTE)
+                        "Grammar Checker / Text Improver" -> navController.navigate(GRAMMAR_IMPROVER_ROUTE)
+                        "Text Translator" -> navController.navigate(TEXT_TRANSLATOR_ROUTE)
+                        "Keyword Extractor" -> navController.navigate(KEYWORD_EXTRACTOR_ROUTE)
                     }
                 },
             )
@@ -119,6 +158,97 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
         }
         composable(PDF_COMPRESSOR_ROUTE) {
             PdfCompressorScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(PDF_TO_WORD_ROUTE) {
+            PdfToWordScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(WORD_TO_PDF_ROUTE) {
+            WordToPdfScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(IMAGE_COMPRESSOR_ROUTE) {
+            ImageCompressorScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(IMAGE_TO_PDF_ROUTE) {
+            ImageToPdfScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(IMAGE_RESIZER_ROUTE) {
+            ImageResizerScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(IMAGE_CONVERTER_ROUTE) {
+            ImageFormatConverterScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(SCIENTIFIC_CALCULATOR_ROUTE) {
+            ScientificCalculatorScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(UNIT_CONVERTER_ROUTE) {
+            UnitConverterScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(EMI_CALCULATOR_ROUTE) {
+            EmiCalculatorScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(AI_TEXT_SUMMARIZER_ROUTE) {
+            AiTextSummarizerScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(GRAMMAR_IMPROVER_ROUTE) {
+            GrammarImproverScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(TEXT_TRANSLATOR_ROUTE) {
+            TextTranslatorScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(KEYWORD_EXTRACTOR_ROUTE) {
+            KeywordExtractorScreen(
                 onBack = {
                     navController.popBackStack()
                 },
