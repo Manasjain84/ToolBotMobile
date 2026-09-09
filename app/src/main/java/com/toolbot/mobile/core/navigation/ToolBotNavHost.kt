@@ -1,13 +1,26 @@
 package com.toolbot.mobile.core.navigation
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.toolbot.mobile.feature.aitext.grammar.GrammarImproverScreen
 import com.toolbot.mobile.feature.aitext.keywords.KeywordExtractorScreen
 import com.toolbot.mobile.feature.aitext.summarizer.AiTextSummarizerScreen
@@ -64,48 +77,51 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentBottomDestination = ToolBotBottomDestination.entries.firstOrNull { destination ->
-        currentDestination?.hierarchy?.any { it.route == destination.route } == true
+        currentDestination?.hierarchy?.any { it.route?.startsWith(destination.route) == true } == true
     } ?: ToolBotBottomDestination.HOME
 
-    NavHost(
-        navController = navController,
-        startDestination = HOME_ROUTE,
-        modifier = modifier,
-    ) {
+    Scaffold(
+        bottomBar = {
+            ToolBotBottomBar(
+                selected = currentBottomDestination,
+                onSelected = { destination ->
+                    navController.navigateToBottomDestination(destination)
+                },
+            )
+        },
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = HOME_ROUTE,
+            modifier = modifier.padding(innerPadding),
+        ) {
         composable(HOME_ROUTE) {
             ToolBotHomeRoute(
                 selectedBottomDestination = currentBottomDestination,
                 onBottomDestinationSelected = { destination ->
                     navController.navigateToBottomDestination(destination)
                 },
-            )
-        }
-        composable(TOOLS_ROUTE) {
-            ToolsScreen(
-                onToolClick = { toolName ->
-                    when (toolName) {
-                        "GPA / SGPA Calculator" -> navController.navigate(GPA_SGPA_ROUTE)
-                        "CGPA Calculator" -> navController.navigate(CGPA_ROUTE)
-                        "Smart Attendance" -> navController.navigate(SMART_ATTENDANCE_ROUTE)
-                        "Percentage & Grade" -> navController.navigate(PERCENTAGE_GRADE_ROUTE)
-                        "PDF Merger" -> navController.navigate(PDF_MERGER_ROUTE)
-                        "PDF Splitter" -> navController.navigate(PDF_SPLITTER_ROUTE)
-                        "PDF Compressor" -> navController.navigate(PDF_COMPRESSOR_ROUTE)
-                        "PDF to Word" -> navController.navigate(PDF_TO_WORD_ROUTE)
-                        "Word to PDF" -> navController.navigate(WORD_TO_PDF_ROUTE)
-                        "Image Compressor" -> navController.navigate(IMAGE_COMPRESSOR_ROUTE)
-                        "Image to PDF" -> navController.navigate(IMAGE_TO_PDF_ROUTE)
-                        "Image Resizer" -> navController.navigate(IMAGE_RESIZER_ROUTE)
-                        "Image Format Converter" -> navController.navigate(IMAGE_CONVERTER_ROUTE)
-                        "Scientific Calculator" -> navController.navigate(SCIENTIFIC_CALCULATOR_ROUTE)
-                        "Unit Converter" -> navController.navigate(UNIT_CONVERTER_ROUTE)
-                        "EMI Calculator" -> navController.navigate(EMI_CALCULATOR_ROUTE)
-                        "AI Text Summarizer" -> navController.navigate(AI_TEXT_SUMMARIZER_ROUTE)
-                        "Grammar Checker / Text Improver" -> navController.navigate(GRAMMAR_IMPROVER_ROUTE)
-                        "Text Translator" -> navController.navigate(TEXT_TRANSLATOR_ROUTE)
-                        "Keyword Extractor" -> navController.navigate(KEYWORD_EXTRACTOR_ROUTE)
+                onToolClick = { toolName -> navController.navigateToTool(toolName) },
+                onCategoryClick = { categoryId ->
+                    navController.navigate("$TOOLS_ROUTE?category=$categoryId") {
+                        launchSingleTop = true
                     }
                 },
+            )
+        }
+        composable(
+            route = "$TOOLS_ROUTE?category={category}",
+            arguments = listOf(
+                navArgument("category") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+            ),
+        ) { backStackEntry ->
+            val selectedCategory = backStackEntry.arguments?.getString("category").orEmpty()
+            ToolsScreen(
+                selectedCategory = selectedCategory,
+                onToolClick = { toolName -> navController.navigateToTool(toolName) },
             )
         }
         composable(FAVORITES_ROUTE) {
@@ -254,7 +270,37 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
                 },
             )
         }
+        }
     }
+}
+
+@Composable
+private fun ToolBotBottomBar(
+    selected: ToolBotBottomDestination,
+    onSelected: (ToolBotBottomDestination) -> Unit,
+) {
+    NavigationBar {
+        ToolBotBottomDestination.entries.forEach { destination ->
+            NavigationBarItem(
+                selected = destination == selected,
+                onClick = { onSelected(destination) },
+                icon = {
+                    Icon(
+                        imageVector = destinationIcon(destination),
+                        contentDescription = destination.label,
+                    )
+                },
+                label = { Text(destination.label) },
+            )
+        }
+    }
+}
+
+private fun destinationIcon(destination: ToolBotBottomDestination) = when (destination) {
+    ToolBotBottomDestination.HOME -> Icons.Outlined.Home
+    ToolBotBottomDestination.TOOLS -> Icons.Outlined.Build
+    ToolBotBottomDestination.FAVORITES -> Icons.Outlined.FavoriteBorder
+    ToolBotBottomDestination.SETTINGS -> Icons.Outlined.Settings
 }
 
 private val ToolBotBottomDestination.route: String
@@ -268,7 +314,40 @@ private val ToolBotBottomDestination.route: String
 private fun androidx.navigation.NavHostController.navigateToBottomDestination(
     destination: ToolBotBottomDestination,
 ) {
+    if (currentBackStackEntry?.destination?.route == destination.route) {
+        return
+    }
+
     navigate(destination.route) {
         launchSingleTop = true
+        restoreState = true
+        popUpTo(graph.startDestinationId) {
+            saveState = true
+        }
+    }
+}
+
+private fun androidx.navigation.NavHostController.navigateToTool(toolName: String) {
+    when (toolName) {
+        "GPA / SGPA Calculator", "GPA Calculator" -> navigate(GPA_SGPA_ROUTE)
+        "CGPA Calculator" -> navigate(CGPA_ROUTE)
+        "Smart Attendance" -> navigate(SMART_ATTENDANCE_ROUTE)
+        "Percentage & Grade" -> navigate(PERCENTAGE_GRADE_ROUTE)
+        "PDF Merger" -> navigate(PDF_MERGER_ROUTE)
+        "PDF Splitter" -> navigate(PDF_SPLITTER_ROUTE)
+        "PDF Compressor" -> navigate(PDF_COMPRESSOR_ROUTE)
+        "PDF to Word" -> navigate(PDF_TO_WORD_ROUTE)
+        "Word to PDF" -> navigate(WORD_TO_PDF_ROUTE)
+        "Image Compressor" -> navigate(IMAGE_COMPRESSOR_ROUTE)
+        "Image to PDF" -> navigate(IMAGE_TO_PDF_ROUTE)
+        "Image Resizer" -> navigate(IMAGE_RESIZER_ROUTE)
+        "Image Format Converter" -> navigate(IMAGE_CONVERTER_ROUTE)
+        "Scientific Calculator" -> navigate(SCIENTIFIC_CALCULATOR_ROUTE)
+        "Unit Converter" -> navigate(UNIT_CONVERTER_ROUTE)
+        "EMI Calculator" -> navigate(EMI_CALCULATOR_ROUTE)
+        "AI Text Summarizer" -> navigate(AI_TEXT_SUMMARIZER_ROUTE)
+        "Grammar Checker / Text Improver" -> navigate(GRAMMAR_IMPROVER_ROUTE)
+        "Text Translator" -> navigate(TEXT_TRANSLATOR_ROUTE)
+        "Keyword Extractor" -> navigate(KEYWORD_EXTRACTOR_ROUTE)
     }
 }

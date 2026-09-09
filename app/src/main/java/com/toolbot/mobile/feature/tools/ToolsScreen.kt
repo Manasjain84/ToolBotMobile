@@ -62,21 +62,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-private enum class ToolCategory(val title: String, val accent: Color) {
-    SMART_EDUCATION("Smart Education", Color(0xFF1E88E5)),
-    PDF_DOCUMENTS("PDF & Documents", Color(0xFFE53935)),
-    IMAGE_CAMERA("Image & Camera", Color(0xFFFF9800)),
-    AI_TEXT("AI & Text", Color(0xFF8E24AA)),
-    GENERAL_UTILITIES("General Utilities", Color(0xFF3949AB)),
+enum class ToolCategory(
+    val title: String,
+    val accent: Color,
+    val routeKey: String,
+) {
+    SMART_EDUCATION("Smart Education", Color(0xFF1E88E5), "smart_education"),
+    PDF_DOCUMENTS("PDF & Documents", Color(0xFFE53935), "pdf_documents"),
+    IMAGE_CAMERA("Image & Camera", Color(0xFFFF9800), "image_camera"),
+    AI_TEXT("AI & Text", Color(0xFF8E24AA), "ai_text"),
+    GENERAL_UTILITIES("General Utilities", Color(0xFF3949AB), "general_utilities"),
 }
 
-private data class ToolItem(
+data class ToolItem(
     val name: String,
     val category: ToolCategory,
     val icon: ImageVector,
 )
 
-private val toolItems = listOf(
+val toolItems = listOf(
     ToolItem("GPA / SGPA Calculator", ToolCategory.SMART_EDUCATION, Icons.Outlined.Calculate),
     ToolItem("CGPA Calculator", ToolCategory.SMART_EDUCATION, Icons.Outlined.ThumbUp),
     ToolItem("Smart Attendance", ToolCategory.SMART_EDUCATION, Icons.Outlined.WatchLater),
@@ -102,14 +106,20 @@ private val toolItems = listOf(
 @Composable
 fun ToolsScreen(
     modifier: Modifier = Modifier,
+    selectedCategory: String = "",
     onToolClick: (String) -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    val filteredTools = remember(query) {
+    val categoryFilter = remember(selectedCategory) {
+        ToolCategory.entries.firstOrNull { it.routeKey == selectedCategory }
+    }
+
+    val filteredTools = remember(query, categoryFilter) {
+        val baseTools = if (categoryFilter == null) toolItems else toolItems.filter { it.category == categoryFilter }
         if (query.isBlank()) {
-            toolItems
+            baseTools
         } else {
-            toolItems.filter { it.name.contains(query, ignoreCase = true) }
+            baseTools.filter { it.name.contains(query, ignoreCase = true) }
         }
     }
 
