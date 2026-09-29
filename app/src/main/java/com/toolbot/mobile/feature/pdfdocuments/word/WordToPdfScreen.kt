@@ -78,6 +78,10 @@ fun WordToPdfScreen(
         if (outputUri == null) {
             statusMessage = "PDF export cancelled."
             isProcessing = false
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
             return@rememberLauncherForActivityResult
         }
 
@@ -94,10 +98,16 @@ fun WordToPdfScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDF created successfully!"
-                delay(1200)
-                onBack()
+                scope.launch {
+                    delay(1200)
+                    onBack()
+                }
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to convert the DOCX file to PDF."
+                scope.launch {
+                    delay(1200)
+                    onBack()
+                }
             }
         }
     }

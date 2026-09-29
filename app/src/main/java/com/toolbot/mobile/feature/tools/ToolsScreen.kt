@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.GTranslate
@@ -61,6 +62,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.feature.favorites.FavoriteStore
 
 enum class ToolCategory(
     val title: String,
@@ -221,7 +223,7 @@ private fun ToolCard(
     accent: Color,
     onClick: () -> Unit,
 ) {
-    var favorite by rememberSaveable(tool.name) { mutableStateOf(false) }
+    val isFavorite = FavoriteStore.isFavorite(tool.name)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -259,11 +261,11 @@ private fun ToolCard(
                     ),
                 )
             }
-            IconButton(onClick = { favorite = !favorite }) {
+            IconButton(onClick = { FavoriteStore.toggle(tool.name) }) {
                 Icon(
-                    imageVector = if (favorite) Icons.Outlined.FavoriteBorder else Icons.Outlined.FavoriteBorder,
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = null,
-                    tint = if (favorite) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (isFavorite) accent else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

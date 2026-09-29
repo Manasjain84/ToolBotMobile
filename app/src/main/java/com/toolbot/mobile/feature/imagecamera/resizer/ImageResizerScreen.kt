@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.imagecamera.common.ImageUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -53,7 +54,14 @@ fun ImageResizerScreen(
     }
 
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/*")) { outUri ->
-        if (outUri == null) { status = "Save cancelled"; return@rememberLauncherForActivityResult }
+        if (outUri == null) {
+            status = "Save cancelled"
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
+            return@rememberLauncherForActivityResult
+        }
         val input = selectedUri ?: run { status = "Select an image first"; return@rememberLauncherForActivityResult }
         scope.launch {
             status = "Resizing..."
@@ -71,7 +79,11 @@ fun ImageResizerScreen(
                 }
                 ImageUtils.compressAndSave(context, resized, outUri, format, 90)
             }
-            status = if (result) "Image resized and saved" else "Resize failed"
+            status = if (result) "Image resized and saved" else "Image resize failed"
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
         }
     }
 

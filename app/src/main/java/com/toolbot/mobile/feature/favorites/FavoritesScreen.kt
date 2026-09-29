@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Card
@@ -26,10 +27,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import com.toolbot.mobile.feature.tools.ToolCategory
+import com.toolbot.mobile.feature.tools.toolItems
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,14 +47,23 @@ private data class FavoriteTool(
     val icon: ImageVector,
 )
 
-private val favoriteTools = listOf(
-    FavoriteTool("GPA / SGPA Calculator", "Smart Education", Color(0xFF1E88E5), Icons.Outlined.Visibility),
-    FavoriteTool("PDF Compressor", "PDF & Documents", Color(0xFFE53935), Icons.Outlined.Visibility),
-)
-
 @Composable
-fun FavoritesScreen(modifier: Modifier = Modifier) {
-    val favorites = remember { mutableStateListOf(*favoriteTools.toTypedArray()) }
+fun FavoritesScreen(
+    modifier: Modifier = Modifier,
+    onToolClick: (String) -> Unit = {},
+) {
+    val favoriteToolNames = FavoriteStore.getAll()
+    val favorites = remember(favoriteToolNames) {
+        toolItems.filter { favoriteToolNames.contains(it.name) }
+            .map { tool ->
+                FavoriteTool(
+                    name = tool.name,
+                    category = tool.category.title,
+                    accent = tool.category.accent,
+                    icon = tool.icon,
+                )
+            }
+    }
 
     Surface(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -107,7 +118,8 @@ fun FavoritesScreen(modifier: Modifier = Modifier) {
                 items(favorites) { item ->
                     FavoriteToolCard(
                         tool = item,
-                        onRemove = { favorites.remove(item) },
+                        onRemove = { FavoriteStore.remove(item.name) },
+                        onToolClick = { onToolClick(item.name) },
                     )
                 }
             }
@@ -119,6 +131,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier) {
 private fun FavoriteToolCard(
     tool: FavoriteTool,
     onRemove: () -> Unit,
+    onToolClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -130,7 +143,7 @@ private fun FavoriteToolCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { }
+                .clickable { onToolClick() }
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -154,7 +167,7 @@ private fun FavoriteToolCard(
             }
             IconButton(onClick = onRemove) {
                 Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
+                    imageVector = Icons.Filled.Favorite,
                     contentDescription = null,
                     tint = tool.accent,
                 )

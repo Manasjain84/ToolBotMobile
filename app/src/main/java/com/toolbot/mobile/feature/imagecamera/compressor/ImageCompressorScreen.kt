@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.imagecamera.common.ImageUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -51,6 +52,10 @@ fun ImageCompressorScreen(
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/*")) { outUri ->
         if (outUri == null) {
             status = "Save cancelled"
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
             return@rememberLauncherForActivityResult
         }
         val input = selectedUri ?: run {
@@ -72,7 +77,15 @@ fun ImageCompressorScreen(
                 ImageUtils.compressAndSave(context, bitmap, outUri, format, quality)
             }
             compressedSize = ImageUtils.getFileSize(context, outUri)
-            status = if (result) "Image compressed successfully" else "Compression failed"
+            status = if (result) {
+                "Image compressed successfully"
+            } else {
+                "Image compression failed"
+            }
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
         }
     }
 

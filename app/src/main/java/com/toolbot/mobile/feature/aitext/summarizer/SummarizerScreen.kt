@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalClipboardManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -128,12 +129,22 @@ fun AiTextSummarizerScreen(
                                 } catch (error: IllegalArgumentException) {
                                     status = error.message ?: "Could not summarize this input."
                                     null
+                                } catch (error: Exception) {
+                                    status = "Unable to summarize this input."
+                                    null
                                 }
                             }
                             isLoading = false
                             if (finalResult != null) {
                                 result = finalResult
                                 status = "Summary ready"
+                                delay(1200)
+                                onBack()
+                            } else {
+                                val failureMessage = status ?: "Unable to summarize this input."
+                                status = failureMessage
+                                delay(1200)
+                                onBack()
                             }
                         }
                     },

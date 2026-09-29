@@ -43,6 +43,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -201,11 +202,25 @@ fun TextTranslatorScreen(
                         status = null
                         coroutineScope.launch {
                             val translated = withContext(Dispatchers.Default) {
-                                OfflineTranslator.translate(inputText, sourceLanguage, targetLanguage)
+                                try {
+                                    OfflineTranslator.translate(inputText, sourceLanguage, targetLanguage)
+                                } catch (error: Exception) {
+                                    status = "Unable to translate the text."
+                                    ""
+                                }
                             }
                             isLoading = false
-                            outputText = translated
-                            status = if (translated.isBlank()) "Unsupported input" else "Translation ready"
+                            if (translated.isBlank()) {
+                                outputText = ""
+                                status = status ?: "Unable to translate the text."
+                                delay(1200)
+                                onBack()
+                            } else {
+                                outputText = translated
+                                status = "Translation ready"
+                                delay(1200)
+                                onBack()
+                            }
                         }
                     },
                     enabled = !isLoading,

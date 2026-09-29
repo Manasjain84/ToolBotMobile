@@ -88,6 +88,10 @@ fun PdfCompressorScreen(
         if (outputUri == null) {
             statusMessage = "Compression cancelled."
             isProcessing = false
+            scope.launch {
+                delay(1200)
+                onBack()
+            }
             return@rememberLauncherForActivityResult
         }
 
@@ -108,10 +112,16 @@ fun PdfCompressorScreen(
 
             if (result.isSuccess) {
                 statusMessage = "PDF compressed successfully!"
-                delay(1200)
-                onBack()
+                scope.launch {
+                    delay(1200)
+                    onBack()
+                }
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to compress the PDF."
+                scope.launch {
+                    delay(1200)
+                    onBack()
+                }
             }
         }
     }

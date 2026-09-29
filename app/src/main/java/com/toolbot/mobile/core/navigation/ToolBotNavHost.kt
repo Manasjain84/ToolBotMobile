@@ -125,7 +125,9 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
             )
         }
         composable(FAVORITES_ROUTE) {
-            FavoritesScreen()
+            FavoritesScreen(
+                onToolClick = { toolName -> navController.navigateToTool(toolName) },
+            )
         }
         composable(SETTINGS_ROUTE) {
             SettingsScreen()

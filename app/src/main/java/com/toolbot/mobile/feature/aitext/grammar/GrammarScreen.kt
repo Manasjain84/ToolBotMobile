@@ -39,6 +39,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -110,11 +111,25 @@ fun GrammarImproverScreen(
                         status = null
                         coroutineScope.launch {
                             val finalResult = withContext(Dispatchers.Default) {
-                                improver.improve(inputText)
+                                try {
+                                    improver.improve(inputText)
+                                } catch (error: Exception) {
+                                    status = "Unable to improve the text."
+                                    null
+                                }
                             }
                             isLoading = false
-                            result = finalResult
-                            status = if (finalResult.correctionCount > 0) "${finalResult.correctionCount} improvement(s) found" else "No changes needed"
+                            if (finalResult != null) {
+                                result = finalResult
+                                status = if (finalResult.correctionCount > 0) "${finalResult.correctionCount} improvement(s) found" else "No changes needed"
+                                delay(1200)
+                                onBack()
+                            } else {
+                                val failureMessage = status ?: "Unable to improve the text."
+                                status = failureMessage
+                                delay(1200)
+                                onBack()
+                            }
                         }
                     },
                     enabled = !isLoading,
