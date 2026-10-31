@@ -43,7 +43,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -96,7 +95,7 @@ fun TextTranslatorScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Offline local translator for the supported pair: English ↔ Hindi.",
+                text = "Translate text between English, Hindi, French, Spanish, German, and other supported languages.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -128,10 +127,7 @@ fun TextTranslatorScreen(
                             DropdownMenuItem(
                                 text = { Text(language.label) },
                                 onClick = {
-                                    sourceLanguage = language.code
-                                    if (sourceLanguage == targetLanguage) {
-                                        targetLanguage = if (language.code == "en") "hi" else "en"
-                                    }
+                                    updateLanguagePair(language.code, targetLanguage)
                                     sourceExpanded = false
                                 },
                             )
@@ -140,9 +136,7 @@ fun TextTranslatorScreen(
                 }
 
                 IconButton(onClick = {
-                    val previousSource = sourceLanguage
-                    sourceLanguage = targetLanguage
-                    targetLanguage = previousSource
+                    updateLanguagePair(targetLanguage, sourceLanguage)
                 }) {
                     Icon(Icons.Outlined.SwapHoriz, contentDescription = "Swap languages")
                 }
@@ -170,10 +164,7 @@ fun TextTranslatorScreen(
                             DropdownMenuItem(
                                 text = { Text(language.label) },
                                 onClick = {
-                                    targetLanguage = language.code
-                                    if (sourceLanguage == targetLanguage) {
-                                        sourceLanguage = if (language.code == "en") "hi" else "en"
-                                    }
+                                    updateLanguagePair(sourceLanguage, language.code)
                                     targetExpanded = false
                                 },
                             )
@@ -201,25 +192,22 @@ fun TextTranslatorScreen(
                         isLoading = true
                         status = null
                         coroutineScope.launch {
-                            val translated = withContext(Dispatchers.Default) {
-                                try {
-                                    OfflineTranslator.translate(inputText, sourceLanguage, targetLanguage)
-                                } catch (error: Exception) {
-                                    status = "Unable to translate the text."
-                                    ""
-                                }
+                            val result = withContext(Dispatchers.IO) {
+                                OfflineTranslator.translate(inputText, sourceLanguage, targetLanguage)
                             }
                             isLoading = false
-                            if (translated.isBlank()) {
-                                outputText = ""
-                                status = status ?: "Unable to translate the text."
-                                delay(1200)
-                                onBack()
+                            if (result.isSuccess) {
+                                val translatedText = result.getOrDefault("")
+                                if (translatedText.isNotBlank()) {
+                                    outputText = translatedText
+                                    status = "Translation ready"
+                                } else {
+                                    outputText = ""
+                                    status = "Unable to translate the text."
+                                }
                             } else {
-                                outputText = translated
-                                status = "Translation ready"
-                                delay(1200)
-                                onBack()
+                                outputText = ""
+                                status = result.exceptionOrNull()?.message ?: "Internet connection required for full translation."
                             }
                         }
                     },
@@ -240,7 +228,7 @@ fun TextTranslatorScreen(
                 Text(
                     text = status.orEmpty(),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (status == "Translation ready") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                 )
             }
 

@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +31,10 @@ import com.toolbot.mobile.feature.generalutilities.emicalculator.EmiCalculatorSc
 import com.toolbot.mobile.feature.generalutilities.scientificcalculator.ScientificCalculatorScreen
 import com.toolbot.mobile.feature.generalutilities.unitconverter.UnitConverterScreen
 import com.toolbot.mobile.feature.home.ToolBotHomeRoute
+import com.toolbot.mobile.feature.imagecamera.compressor.ImageCompressorScreen
+import com.toolbot.mobile.feature.imagecamera.converter.ImageFormatConverterScreen
+import com.toolbot.mobile.feature.imagecamera.imagetopdf.ImageToPdfScreen
+import com.toolbot.mobile.feature.imagecamera.resizer.ImageResizerScreen
 import com.toolbot.mobile.feature.pdfdocuments.compressor.PdfCompressorScreen
 import com.toolbot.mobile.feature.pdfdocuments.merger.PdfMergerScreen
 import com.toolbot.mobile.feature.pdfdocuments.splitter.PdfSplitterScreen
@@ -41,10 +46,6 @@ import com.toolbot.mobile.feature.smarteducation.cgpa.CgpaScreen
 import com.toolbot.mobile.feature.smarteducation.gpa.GpaSgpaScreen
 import com.toolbot.mobile.feature.smarteducation.percentage.PercentageGradeScreen
 import com.toolbot.mobile.feature.tools.ToolsScreen
-import com.toolbot.mobile.feature.imagecamera.compressor.ImageCompressorScreen
-import com.toolbot.mobile.feature.imagecamera.imagetopdf.ImageToPdfScreen
-import com.toolbot.mobile.feature.imagecamera.resizer.ImageResizerScreen
-import com.toolbot.mobile.feature.imagecamera.converter.ImageFormatConverterScreen
 
 private const val HOME_ROUTE = "home"
 private const val TOOLS_ROUTE = "tools"
@@ -95,183 +96,183 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
             startDestination = HOME_ROUTE,
             modifier = modifier.padding(innerPadding),
         ) {
-        composable(HOME_ROUTE) {
-            ToolBotHomeRoute(
-                selectedBottomDestination = currentBottomDestination,
-                onBottomDestinationSelected = { destination ->
-                    navController.navigateToBottomDestination(destination)
-                },
-                onToolClick = { toolName -> navController.navigateToTool(toolName) },
-                onCategoryClick = { categoryId ->
-                    navController.navigate("$TOOLS_ROUTE?category=$categoryId") {
-                        launchSingleTop = true
-                    }
-                },
-            )
-        }
-        composable(
-            route = "$TOOLS_ROUTE?category={category}",
-            arguments = listOf(
-                navArgument("category") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                },
-            ),
-        ) { backStackEntry ->
-            val selectedCategory = backStackEntry.arguments?.getString("category").orEmpty()
-            ToolsScreen(
-                selectedCategory = selectedCategory,
-                onToolClick = { toolName -> navController.navigateToTool(toolName) },
-            )
-        }
-        composable(FAVORITES_ROUTE) {
-            FavoritesScreen(
-                onToolClick = { toolName -> navController.navigateToTool(toolName) },
-            )
-        }
-        composable(SETTINGS_ROUTE) {
-            SettingsScreen()
-        }
-        composable(GPA_SGPA_ROUTE) {
-            GpaSgpaScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(CGPA_ROUTE) {
-            CgpaScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(SMART_ATTENDANCE_ROUTE) {
-            SmartAttendanceScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(PERCENTAGE_GRADE_ROUTE) {
-            PercentageGradeScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(PDF_MERGER_ROUTE) {
-            PdfMergerScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(PDF_SPLITTER_ROUTE) {
-            PdfSplitterScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(PDF_COMPRESSOR_ROUTE) {
-            PdfCompressorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(PDF_TO_WORD_ROUTE) {
-            PdfToWordScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(WORD_TO_PDF_ROUTE) {
-            WordToPdfScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(IMAGE_COMPRESSOR_ROUTE) {
-            ImageCompressorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(IMAGE_TO_PDF_ROUTE) {
-            ImageToPdfScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(IMAGE_RESIZER_ROUTE) {
-            ImageResizerScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(IMAGE_CONVERTER_ROUTE) {
-            ImageFormatConverterScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(SCIENTIFIC_CALCULATOR_ROUTE) {
-            ScientificCalculatorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(UNIT_CONVERTER_ROUTE) {
-            UnitConverterScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(EMI_CALCULATOR_ROUTE) {
-            EmiCalculatorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(AI_TEXT_SUMMARIZER_ROUTE) {
-            AiTextSummarizerScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(GRAMMAR_IMPROVER_ROUTE) {
-            GrammarImproverScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(TEXT_TRANSLATOR_ROUTE) {
-            TextTranslatorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
-        composable(KEYWORD_EXTRACTOR_ROUTE) {
-            KeywordExtractorScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
+            composable(HOME_ROUTE) {
+                ToolBotHomeRoute(
+                    selectedBottomDestination = currentBottomDestination,
+                    onBottomDestinationSelected = { destination ->
+                        navController.navigateToBottomDestination(destination)
+                    },
+                    onToolClick = { toolName -> navController.navigateToTool(toolName) },
+                    onCategoryClick = { categoryId ->
+                        navController.navigate("$TOOLS_ROUTE?category=$categoryId") {
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+            composable(
+                route = "$TOOLS_ROUTE?category={category}",
+                arguments = listOf(
+                    navArgument("category") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                ),
+            ) { backStackEntry ->
+                val selectedCategory = backStackEntry.arguments?.getString("category").orEmpty()
+                ToolsScreen(
+                    selectedCategory = selectedCategory,
+                    onToolClick = { toolName -> navController.navigateToTool(toolName) },
+                )
+            }
+            composable(FAVORITES_ROUTE) {
+                FavoritesScreen(
+                    onToolClick = { toolName -> navController.navigateToTool(toolName) },
+                )
+            }
+            composable(SETTINGS_ROUTE) {
+                SettingsScreen()
+            }
+            composable(GPA_SGPA_ROUTE) {
+                GpaSgpaScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(CGPA_ROUTE) {
+                CgpaScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(SMART_ATTENDANCE_ROUTE) {
+                SmartAttendanceScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(PERCENTAGE_GRADE_ROUTE) {
+                PercentageGradeScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(PDF_MERGER_ROUTE) {
+                PdfMergerScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(PDF_SPLITTER_ROUTE) {
+                PdfSplitterScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(PDF_COMPRESSOR_ROUTE) {
+                PdfCompressorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(PDF_TO_WORD_ROUTE) {
+                PdfToWordScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(WORD_TO_PDF_ROUTE) {
+                WordToPdfScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(IMAGE_COMPRESSOR_ROUTE) {
+                ImageCompressorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(IMAGE_TO_PDF_ROUTE) {
+                ImageToPdfScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(IMAGE_RESIZER_ROUTE) {
+                ImageResizerScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(IMAGE_CONVERTER_ROUTE) {
+                ImageFormatConverterScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(SCIENTIFIC_CALCULATOR_ROUTE) {
+                ScientificCalculatorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(UNIT_CONVERTER_ROUTE) {
+                UnitConverterScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(EMI_CALCULATOR_ROUTE) {
+                EmiCalculatorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(AI_TEXT_SUMMARIZER_ROUTE) {
+                AiTextSummarizerScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(GRAMMAR_IMPROVER_ROUTE) {
+                GrammarImproverScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(TEXT_TRANSLATOR_ROUTE) {
+                TextTranslatorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
+            composable(KEYWORD_EXTRACTOR_ROUTE) {
+                KeywordExtractorScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                )
+            }
         }
     }
 }
@@ -320,12 +321,26 @@ private fun androidx.navigation.NavHostController.navigateToBottomDestination(
         return
     }
 
+    if (destination == ToolBotBottomDestination.HOME) {
+        val popped = popBackStack(HOME_ROUTE, inclusive = false)
+        if (!popped) {
+            navigate(HOME_ROUTE) {
+                popUpTo(graph.findStartDestination().id) {
+                    inclusive = false
+                }
+                launchSingleTop = true
+            }
+        }
+        return
+    }
+
+    val startDestId = graph.findStartDestination().id
     navigate(destination.route) {
-        launchSingleTop = true
-        restoreState = true
-        popUpTo(graph.startDestinationId) {
+        popUpTo(startDestId) {
             saveState = true
         }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 

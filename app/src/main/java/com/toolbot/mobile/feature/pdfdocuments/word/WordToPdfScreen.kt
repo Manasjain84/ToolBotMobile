@@ -38,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -78,10 +77,6 @@ fun WordToPdfScreen(
         if (outputUri == null) {
             statusMessage = "PDF export cancelled."
             isProcessing = false
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
 
@@ -93,21 +88,14 @@ fun WordToPdfScreen(
 
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                convertDocxToPdf(inputUri, outputUri, context.contentResolver)
+                convertDocxToPdf(inputUri, outputUri, context)
             }
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDF created successfully!"
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             } else {
+                // Display error message and keep user on screen to allow retry
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to convert the DOCX file to PDF."
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             }
         }
     }
@@ -202,7 +190,7 @@ fun WordToPdfScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = if (statusMessage.contains("successfully", ignoreCase = true) || statusMessage.contains("Ready", ignoreCase = true)) {
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                        } else if (statusMessage.contains("cancelled", ignoreCase = true) || statusMessage.contains("Please", ignoreCase = true) || statusMessage.contains("Unable", ignoreCase = true)) {
+                        } else if (statusMessage.contains("cancelled", ignoreCase = true) || statusMessage.contains("Please", ignoreCase = true) || statusMessage.contains("Unable", ignoreCase = true) || statusMessage.contains("failed", ignoreCase = true) || statusMessage.contains("invalid", ignoreCase = true) || statusMessage.contains("missing", ignoreCase = true) || statusMessage.contains("empty", ignoreCase = true)) {
                             MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.45f)
                         } else {
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)

@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.imagecamera.common.ImageUtils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -42,10 +41,6 @@ fun ImageFormatConverterScreen(
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/*")) { outUri ->
         if (outUri == null) {
             status = "Save cancelled"
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
         val input = selectedUri ?: run { status = "Choose an image first"; return@rememberLauncherForActivityResult }
@@ -61,10 +56,6 @@ fun ImageFormatConverterScreen(
                 ImageUtils.compressAndSave(context, bmp, outUri, format, 90)
             }
             status = if (result) "Converted and saved" else "Image conversion failed"
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
         }
     }
 

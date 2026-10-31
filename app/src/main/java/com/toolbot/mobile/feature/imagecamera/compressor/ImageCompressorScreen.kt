@@ -52,10 +52,6 @@ fun ImageCompressorScreen(
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/*")) { outUri ->
         if (outUri == null) {
             status = "Save cancelled"
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
         val input = selectedUri ?: run {
@@ -81,10 +77,6 @@ fun ImageCompressorScreen(
                 "Image compressed successfully"
             } else {
                 "Image compression failed"
-            }
-            scope.launch {
-                delay(1200)
-                onBack()
             }
         }
     }

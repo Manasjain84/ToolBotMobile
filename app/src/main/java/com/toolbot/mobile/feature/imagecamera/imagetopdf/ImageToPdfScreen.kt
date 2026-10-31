@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.imagecamera.common.ImageUtils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -48,10 +47,6 @@ fun ImageToPdfScreen(
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { outUri ->
         if (outUri == null) {
             status = "Save cancelled"
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
         val input = selectedUri ?: run { status = "Select an image first"; return@rememberLauncherForActivityResult }
@@ -76,10 +71,6 @@ fun ImageToPdfScreen(
             }
             outputSize = if (result) ImageUtils.getFileSize(context, outUri) else null
             status = if (result) "PDF created successfully" else "Failed to create PDF"
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
         }
     }
 

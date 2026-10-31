@@ -93,10 +93,6 @@ fun PdfMergerScreen(
         if (outputUri == null) {
             statusMessage = "Merge cancelled."
             isProcessing = false
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
 
@@ -107,16 +103,8 @@ fun PdfMergerScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDFs merged successfully!"
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to merge the selected PDFs."
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             }
         }
     }

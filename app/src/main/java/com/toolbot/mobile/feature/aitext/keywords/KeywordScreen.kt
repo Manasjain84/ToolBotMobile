@@ -40,7 +40,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -134,13 +133,9 @@ fun KeywordExtractorScreen(
                             if (finalResult != null) {
                                 result = finalResult
                                 status = if (finalResult.keywords.isNotEmpty()) "Keywords ready" else "No keywords found"
-                                delay(1200)
-                                onBack()
                             } else {
                                 val failureMessage = status ?: "Unable to extract keywords."
                                 status = failureMessage
-                                delay(1200)
-                                onBack()
                             }
                         }
                     },

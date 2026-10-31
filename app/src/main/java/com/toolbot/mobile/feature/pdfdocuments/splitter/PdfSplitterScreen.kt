@@ -102,10 +102,6 @@ fun PdfSplitterScreen(
         if (outputUri == null) {
             statusMessage = "Split cancelled."
             isProcessing = false
-            scope.launch {
-                delay(1200)
-                onBack()
-            }
             return@rememberLauncherForActivityResult
         }
 
@@ -130,16 +126,8 @@ fun PdfSplitterScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDF split successfully!"
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to split the PDF."
-                scope.launch {
-                    delay(1200)
-                    onBack()
-                }
             }
         }
     }

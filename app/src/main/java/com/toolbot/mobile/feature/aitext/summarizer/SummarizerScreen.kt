@@ -138,13 +138,9 @@ fun AiTextSummarizerScreen(
                             if (finalResult != null) {
                                 result = finalResult
                                 status = "Summary ready"
-                                delay(1200)
-                                onBack()
                             } else {
                                 val failureMessage = status ?: "Unable to summarize this input."
                                 status = failureMessage
-                                delay(1200)
-                                onBack()
                             }
                         }
                     },
