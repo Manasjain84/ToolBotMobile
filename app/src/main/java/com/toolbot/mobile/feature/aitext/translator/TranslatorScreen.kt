@@ -39,9 +39,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,8 +54,10 @@ fun TextTranslatorScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     val languages = OfflineTranslator.supportedLanguages
     var sourceLanguage by rememberSaveable { mutableStateOf("en") }
     var targetLanguage by rememberSaveable { mutableStateOf("hi") }
@@ -201,6 +205,11 @@ fun TextTranslatorScreen(
                                 if (translatedText.isNotBlank()) {
                                     outputText = translatedText
                                     status = "Translation ready"
+                                    repository.saveAiTextHistory(
+                                        toolType = "Text Translator",
+                                        inputText = inputText,
+                                        outputText = translatedText
+                                    )
                                 } else {
                                     outputText = ""
                                     status = "Unable to translate the text."

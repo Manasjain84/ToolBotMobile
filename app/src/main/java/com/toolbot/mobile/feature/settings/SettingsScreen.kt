@@ -9,14 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.PrivacyTip
-import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -24,28 +20,33 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.datastore.AppThemeMode
+import com.toolbot.mobile.core.datastore.ThemePreferencesManager
+import kotlinx.coroutines.launch
 
-private enum class ThemeMode(val label: String) {
-    SYSTEM("System default"),
-    LIGHT("Light"),
-    DARK("Dark"),
+private enum class ThemeModeOption(val label: String, val mode: AppThemeMode) {
+    SYSTEM("System default", AppThemeMode.SYSTEM),
+    LIGHT("Light", AppThemeMode.LIGHT),
+    DARK("Dark", AppThemeMode.DARK),
 }
 
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
-    var themeMode by remember { mutableStateOf(ThemeMode.SYSTEM) }
-    var notificationsEnabled by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val themeManager = remember { ThemePreferencesManager.getInstance(context) }
+    val currentThemeMode by themeManager.themeModeFlow.collectAsState(initial = AppThemeMode.SYSTEM)
 
     Surface(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -70,24 +71,17 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
             item {
                 SectionCard(title = "Appearance", icon = Icons.Outlined.Palette) {
-                    ThemeMode.entries.forEach { mode ->
+                    ThemeModeOption.entries.forEach { option ->
                         SettingChoiceRow(
-                            title = mode.label,
-                            selected = themeMode == mode,
-                            onClick = { themeMode = mode },
+                            title = option.label,
+                            selected = currentThemeMode == option.mode,
+                            onClick = {
+                                coroutineScope.launch {
+                                    themeManager.setThemeMode(option.mode)
+                                }
+                            },
                         )
                     }
-                }
-            }
-
-            item {
-                SectionCard(title = "Notifications", icon = Icons.Outlined.NotificationsNone) {
-                    SettingToggleRow(
-                        title = "Notifications",
-                        subtitle = "Get reminders and updates",
-                        checked = notificationsEnabled,
-                        onCheckedChange = { notificationsEnabled = it },
-                    )
                 }
             }
 
@@ -96,12 +90,6 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     SettingInfoRow(title = "About ToolBot", value = "Student productivity toolkit")
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
                     SettingInfoRow(title = "App version", value = "1.0.0")
-                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                    SettingInfoRow(
-                        title = "Privacy",
-                        value = "Privacy information placeholder",
-                        leadingIcon = Icons.Outlined.PrivacyTip,
-                    )
                 }
             }
         }
@@ -117,7 +105,7 @@ private fun SectionCard(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(0.02f))
+            Spacer(modifier = Modifier.weight(0.02f))
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
@@ -154,31 +142,6 @@ private fun SettingChoiceRow(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
         )
-    }
-}
-
-@Composable
-private fun SettingToggleRow(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

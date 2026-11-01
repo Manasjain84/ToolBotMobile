@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +19,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,8 +50,8 @@ fun PdfToWordScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var selectedPdf by remember { mutableStateOf<Uri?>(null) }
-    var selectedMode by remember { mutableStateOf(PdfToWordConversionMode.EDITABLE) }
     var statusMessage by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
 
@@ -90,13 +89,18 @@ fun PdfToWordScreen(
         }
 
         scope.launch {
-            val modeToUse = selectedMode
             val result = withContext(Dispatchers.IO) {
-                convertPdfToWord(inputUri, outputUri, context, modeToUse)
+                convertPdfToWord(inputUri, outputUri, context)
             }
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "Word document created successfully!"
+                repository.savePdfHistory(
+                    operationType = "PDF to Word",
+                    originalFilename = selectedPdf?.let { PdfDocumentUtils.getDisplayName(it, context.contentResolver) } ?: "input.pdf",
+                    outputFilename = outputUri.lastPathSegment ?: "document.docx",
+                    status = "Success"
+                )
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to convert the PDF to Word."
             }
@@ -130,7 +134,7 @@ fun PdfToWordScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Convert a PDF into a Word document. Choose between editable text extraction or layout-preserving exact page rendering.",
+                text = "Convert a PDF into a Word document with exact layout preservation.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -169,74 +173,6 @@ fun PdfToWordScreen(
                 }
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Conversion Mode",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    FilterChip(
-                        selected = selectedMode == PdfToWordConversionMode.EDITABLE,
-                        onClick = { selectedMode = PdfToWordConversionMode.EDITABLE },
-                        label = { Text("Editable Text") },
-                        modifier = Modifier.weight(1f),
-                        enabled = !isProcessing,
-                    )
-                    FilterChip(
-                        selected = selectedMode == PdfToWordConversionMode.EXACT_LAYOUT,
-                        onClick = { selectedMode = PdfToWordConversionMode.EXACT_LAYOUT },
-                        label = { Text("Exact Layout") },
-                        modifier = Modifier.weight(1f),
-                        enabled = !isProcessing,
-                    )
-                }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    ),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        if (selectedMode == PdfToWordConversionMode.EDITABLE) {
-                            Text(
-                                text = "Editable Text Mode",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "Extracts selectable text and embedded images into Word paragraphs. Best for editing text content, though visual layout and positioning may differ from the PDF.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        } else {
-                            Text(
-                                text = "Exact Layout Mode",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(
-                                text = "Renders full PDF pages into Word images to preserve exact original visual appearance, text layout, tables, and charts. Note: Page content is preserved visually and is not editable as Word text.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
-            }
-
             Button(
                 onClick = {
                     if (selectedPdf == null) {
@@ -244,11 +180,7 @@ fun PdfToWordScreen(
                         return@Button
                     }
                     isProcessing = true
-                    statusMessage = if (selectedMode == PdfToWordConversionMode.EXACT_LAYOUT) {
-                        "Rendering PDF pages into Exact Layout Word document..."
-                    } else {
-                        "Extracting text, images, and structuring Word document..."
-                    }
+                    statusMessage = "Rendering PDF pages into Exact Layout Word document..."
                     saveLauncher.launch("converted_document.docx")
                 },
                 modifier = Modifier.fillMaxWidth(),

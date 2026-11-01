@@ -35,6 +35,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,8 +50,10 @@ fun GrammarImproverScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var inputText by rememberSaveable { mutableStateOf("") }
     var result by rememberSaveable { mutableStateOf<GrammarResult?>(null) }
     var status by rememberSaveable { mutableStateOf<String?>(null) }
@@ -121,6 +125,11 @@ fun GrammarImproverScreen(
                             if (finalResult != null) {
                                 result = finalResult
                                 status = if (finalResult.correctionCount > 0) "${finalResult.correctionCount} improvement(s) found" else "No changes needed"
+                                repository.saveAiTextHistory(
+                                    toolType = "Grammar Checker / Text Improver",
+                                    inputText = inputText,
+                                    outputText = finalResult.improvedText
+                                )
                             } else {
                                 val failureMessage = status ?: "Unable to improve the text."
                                 status = failureMessage

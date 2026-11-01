@@ -7,5 +7,6 @@ enum class ToolBotBottomDestination(
     HOME(label = "Home", iconName = "home"),
     TOOLS(label = "Tools", iconName = "tools"),
     FAVORITES(label = "Favorites", iconName = "favorites"),
+    HISTORY(label = "History", iconName = "history"),
     SETTINGS(label = "Settings", iconName = "settings"),
 }

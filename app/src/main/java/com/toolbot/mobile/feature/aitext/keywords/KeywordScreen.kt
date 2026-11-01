@@ -36,9 +36,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,8 +51,10 @@ fun KeywordExtractorScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var inputText by rememberSaveable { mutableStateOf("") }
     var selectedLimit by rememberSaveable { mutableStateOf(10) }
     var result by rememberSaveable { mutableStateOf<KeywordResult?>(null) }
@@ -133,6 +137,11 @@ fun KeywordExtractorScreen(
                             if (finalResult != null) {
                                 result = finalResult
                                 status = if (finalResult.keywords.isNotEmpty()) "Keywords ready" else "No keywords found"
+                                repository.saveAiTextHistory(
+                                    toolType = "Keyword Extractor",
+                                    inputText = inputText,
+                                    outputText = finalResult.keywords.joinToString(", ")
+                                )
                             } else {
                                 val failureMessage = status ?: "Unable to extract keywords."
                                 status = failureMessage

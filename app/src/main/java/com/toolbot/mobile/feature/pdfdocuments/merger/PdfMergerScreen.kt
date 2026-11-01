@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
@@ -59,6 +60,7 @@ fun PdfMergerScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var selectedUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var statusMessage by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
@@ -103,6 +105,12 @@ fun PdfMergerScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDFs merged successfully!"
+                repository.savePdfHistory(
+                    operationType = "PDF Merger",
+                    originalFilename = "${selectedUris.size} source file(s)",
+                    outputFilename = outputUri.lastPathSegment ?: "merged.pdf",
+                    status = "Success"
+                )
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to merge the selected PDFs."
             }

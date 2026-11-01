@@ -40,6 +40,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,8 +53,10 @@ fun AiTextSummarizerScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var inputText by rememberSaveable { mutableStateOf("") }
     var selectedLength by rememberSaveable { mutableStateOf(SummaryLength.MEDIUM) }
     var result by rememberSaveable { mutableStateOf<SummaryResult?>(null) }
@@ -138,6 +142,11 @@ fun AiTextSummarizerScreen(
                             if (finalResult != null) {
                                 result = finalResult
                                 status = "Summary ready"
+                                repository.saveAiTextHistory(
+                                    toolType = "AI Text Summarizer",
+                                    inputText = inputText,
+                                    outputText = finalResult.summary
+                                )
                             } else {
                                 val failureMessage = status ?: "Unable to summarize this input."
                                 status = failureMessage

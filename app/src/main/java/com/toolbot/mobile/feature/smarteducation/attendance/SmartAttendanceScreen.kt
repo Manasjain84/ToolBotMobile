@@ -36,12 +36,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
+import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmartAttendanceScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
+
     var conductedText by remember { mutableStateOf("") }
     var attendedText by remember { mutableStateOf("") }
     var targetText by remember { mutableStateOf("75") }
@@ -112,7 +121,17 @@ fun SmartAttendanceScreen(
             ) {
                 Button(
                     onClick = {
-                        result = calculateAttendance(conductedText, attendedText, targetText)
+                        val res = calculateAttendance(conductedText, attendedText, targetText)
+                        result = res
+                        if (res.isValid) {
+                            coroutineScope.launch {
+                                repository.saveCalculationHistory(
+                                    toolType = "Smart Attendance",
+                                    inputsSummary = "Conducted: $conductedText, Attended: $attendedText, Target: $targetText%",
+                                    resultSummary = res.requiredFutureClasses?.let { "Required future classes: $it" } ?: res.statusMessage
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier.weight(1f),
                 ) {

@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -53,6 +54,7 @@ fun PdfSplitterScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var selectedPdf by remember { mutableStateOf<Uri?>(null) }
     var pageCount by remember { mutableStateOf<Int?>(null) }
     var startPage by remember { mutableStateOf("1") }
@@ -126,6 +128,12 @@ fun PdfSplitterScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDF split successfully!"
+                repository.savePdfHistory(
+                    operationType = "PDF Splitter",
+                    originalFilename = selectedPdf?.let { PdfDocumentUtils.getDisplayName(it, context.contentResolver) } ?: "input.pdf",
+                    outputFilename = outputUri.lastPathSegment ?: "split.pdf",
+                    status = "Success"
+                )
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to split the PDF."
             }

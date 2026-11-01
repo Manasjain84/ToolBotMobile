@@ -40,6 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +52,10 @@ fun CgpaScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
+
     val semesters = remember { mutableStateListOf(SemesterInput(id = UUID.randomUUID().toString())) }
     var calculationResult by remember { mutableStateOf<CgpaCalculationResult?>(null) }
 
@@ -223,7 +231,17 @@ fun CgpaScreen(
             ) {
                 Button(
                     onClick = {
-                        calculationResult = calculateCgpa(semesters)
+                        val res = calculateCgpa(semesters)
+                        calculationResult = res
+                        if (res.isValid && res.cgpa != null) {
+                            coroutineScope.launch {
+                                repository.saveCalculationHistory(
+                                    toolType = "CGPA Calculator",
+                                    inputsSummary = "Semesters: ${res.semesterCount}, Total Credits: ${res.totalCredits}",
+                                    resultSummary = "CGPA: ${res.cgpa}"
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier.weight(1f),
                 ) {

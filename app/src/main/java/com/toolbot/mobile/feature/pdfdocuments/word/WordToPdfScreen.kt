@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +50,7 @@ fun WordToPdfScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var selectedDocx by remember { mutableStateOf<Uri?>(null) }
     var statusMessage by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
@@ -93,6 +95,12 @@ fun WordToPdfScreen(
             isProcessing = false
             if (result.isSuccess) {
                 statusMessage = "PDF created successfully!"
+                repository.savePdfHistory(
+                    operationType = "Word to PDF",
+                    originalFilename = selectedDocx?.let { PdfDocumentUtils.getDisplayName(it, context.contentResolver) } ?: "input.docx",
+                    outputFilename = outputUri.lastPathSegment ?: "document.pdf",
+                    status = "Success"
+                )
             } else {
                 // Display error message and keep user on screen to allow retry
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to convert the DOCX file to PDF."

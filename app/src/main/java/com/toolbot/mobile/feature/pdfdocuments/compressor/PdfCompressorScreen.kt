@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.toolbot.mobile.core.db.ToolBotRepository
 import com.toolbot.mobile.feature.pdfdocuments.common.PdfDocumentUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -53,6 +54,7 @@ fun PdfCompressorScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
     var selectedPdf by remember { mutableStateOf<Uri?>(null) }
     var statusMessage by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
@@ -108,6 +110,12 @@ fun PdfCompressorScreen(
 
             if (result.isSuccess) {
                 statusMessage = "PDF compressed successfully!"
+                repository.savePdfHistory(
+                    operationType = "PDF Compressor",
+                    originalFilename = selectedPdf?.let { PdfDocumentUtils.getDisplayName(it, context.contentResolver) } ?: "input.pdf",
+                    outputFilename = outputUri.lastPathSegment ?: "compressed.pdf",
+                    status = "Success"
+                )
             } else {
                 statusMessage = result.exceptionOrNull()?.message ?: "Unable to compress the PDF."
             }

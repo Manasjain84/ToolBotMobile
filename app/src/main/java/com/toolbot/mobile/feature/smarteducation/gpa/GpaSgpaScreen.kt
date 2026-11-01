@@ -45,6 +45,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +57,10 @@ fun GpaSgpaScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
+
     val subjects = remember { mutableStateListOf(GpaSubjectInput(id = UUID.randomUUID().toString())) }
     var calculationResult by remember { mutableStateOf<GpaSgpaCalculationResult?>(null) }
     val dropdownExpanded = remember { mutableStateMapOf<String, Boolean>() }
@@ -263,8 +271,17 @@ fun GpaSgpaScreen(
             ) {
                 Button(
                     onClick = {
-                        val result = calculateGpaSgpa(subjects)
-                        calculationResult = result
+                        val res = calculateGpaSgpa(subjects)
+                        calculationResult = res
+                        if (res.isValid && res.sgpa != null) {
+                            coroutineScope.launch {
+                                repository.saveCalculationHistory(
+                                    toolType = "GPA / SGPA Calculator",
+                                    inputsSummary = "Subjects: ${res.validSubjectCount}, Total Credits: ${res.totalCredits}",
+                                    resultSummary = "SGPA: ${res.sgpa}"
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier.weight(1f),
                 ) {

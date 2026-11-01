@@ -36,12 +36,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.toolbot.mobile.core.db.ToolBotRepository
+import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PercentageGradeScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val repository = remember { ToolBotRepository.getInstance(context) }
+
     var obtainedText by remember { mutableStateOf("") }
     var maximumText by remember { mutableStateOf("") }
     var result by remember { mutableStateOf<PercentageGradeResult?>(null) }
@@ -102,7 +111,17 @@ fun PercentageGradeScreen(
             ) {
                 Button(
                     onClick = {
-                        result = calculatePercentageGrade(obtainedText, maximumText)
+                        val res = calculatePercentageGrade(obtainedText, maximumText)
+                        result = res
+                        if (res.isValid && res.percentage != null) {
+                            coroutineScope.launch {
+                                repository.saveCalculationHistory(
+                                    toolType = "Percentage & Grade",
+                                    inputsSummary = "Obtained: ${res.obtainedMarks}, Max: ${res.maximumMarks}",
+                                    resultSummary = "Percentage: ${String.format("%.2f", res.percentage)}%, Grade: ${res.grade}"
+                                )
+                            }
+                        }
                     },
                     modifier = Modifier.weight(1f),
                 ) {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import com.toolbot.mobile.feature.favorites.FavoritesScreen
 import com.toolbot.mobile.feature.generalutilities.emicalculator.EmiCalculatorScreen
 import com.toolbot.mobile.feature.generalutilities.scientificcalculator.ScientificCalculatorScreen
 import com.toolbot.mobile.feature.generalutilities.unitconverter.UnitConverterScreen
+import com.toolbot.mobile.feature.history.HistoryScreen
 import com.toolbot.mobile.feature.home.ToolBotHomeRoute
 import com.toolbot.mobile.feature.imagecamera.compressor.ImageCompressorScreen
 import com.toolbot.mobile.feature.imagecamera.converter.ImageFormatConverterScreen
@@ -50,6 +52,7 @@ import com.toolbot.mobile.feature.tools.ToolsScreen
 private const val HOME_ROUTE = "home"
 private const val TOOLS_ROUTE = "tools"
 private const val FAVORITES_ROUTE = "favorites"
+private const val HISTORY_ROUTE = "history"
 private const val SETTINGS_ROUTE = "settings"
 private const val GPA_SGPA_ROUTE = "gpa_sgpa"
 private const val CGPA_ROUTE = "cgpa"
@@ -129,6 +132,9 @@ fun ToolBotNavHost(modifier: Modifier = Modifier) {
                 FavoritesScreen(
                     onToolClick = { toolName -> navController.navigateToTool(toolName) },
                 )
+            }
+            composable(HISTORY_ROUTE) {
+                HistoryScreen()
             }
             composable(SETTINGS_ROUTE) {
                 SettingsScreen()
@@ -303,6 +309,7 @@ private fun destinationIcon(destination: ToolBotBottomDestination) = when (desti
     ToolBotBottomDestination.HOME -> Icons.Outlined.Home
     ToolBotBottomDestination.TOOLS -> Icons.Outlined.Build
     ToolBotBottomDestination.FAVORITES -> Icons.Outlined.FavoriteBorder
+    ToolBotBottomDestination.HISTORY -> Icons.Outlined.History
     ToolBotBottomDestination.SETTINGS -> Icons.Outlined.Settings
 }
 
@@ -311,6 +318,7 @@ private val ToolBotBottomDestination.route: String
         ToolBotBottomDestination.HOME -> HOME_ROUTE
         ToolBotBottomDestination.TOOLS -> TOOLS_ROUTE
         ToolBotBottomDestination.FAVORITES -> FAVORITES_ROUTE
+        ToolBotBottomDestination.HISTORY -> HISTORY_ROUTE
         ToolBotBottomDestination.SETTINGS -> SETTINGS_ROUTE
     }
 
